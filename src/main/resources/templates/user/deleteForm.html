@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments.html :: myHeader"/>
+<body>
+<nav th:replace="fragments.html :: myNav ('회원탈퇴')"/>
+<div th:replace="fragments.html :: topDiv1"/>
+<br/><br/><br/><br/>
+<div align="center">
+    <form action="deleteForm.html" th:action th:method="post" th:object="${userLoginForm}">
+        <div>
+            <label th:for="password">비밀번호 체크 : </label>
+            <input type="password" th:field="*{password}" th:errorclass="field-error"/>
+            <div class="field-error" th:errors="*{password}" />
+        </div>
+        <br/>
+        <div align="center">
+            <button type="submit">회원탈퇴</button>
+        </div>
+    </form>
+</div>
+</body>
+</html>

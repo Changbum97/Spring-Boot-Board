@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments.html :: myHeader"/>
+<body>
+<nav th:replace="fragments.html :: myNav ('글작성')"/>
+<div th:replace="fragments.html :: topDiv1"/>
+<br/><br/><br/><br/>
+<div align="center">
+    <form action="writeForm.html" th:action th:method="post" th:object="${contentWriteForm}" style="width: 750px;"
+          enctype="multipart/form-data">
+        <div>
+            <label th:if="*{category==1}">카테고리 : 공지사항</label>
+            <label th:if="*{category==2}">카테고리 : 자유게시판</label>
+            <label th:if="*{category==3}">카테고리 : 골드게시판</label>
+        </div>
+        <br/>
+        <div>
+            <label>작성자 : [[*{writer}]]</label>
+        </div>
+        <br/>
+        <div>
+            <label th:for="title">글제목 : </label>
+            <input type="text" th:field="*{title}" style="width: 400px" th:errorclass="field-error"/>
+            <div class="field-error" th:errors="*{title}" />
+        </div>
+        <br/>
+        <div>
+            <label th:for="imageFiles">이미지 추가 : </label>
+            <input type="file" th:field="*{imageFiles}" multiple="multiple"  th:errorclass="field-error"/>
+            <div class="field-error" th:errors="*{imageFiles}" />
+        </div>
+        <br/>
+        <div>
+            <label th:for="texts">내용 : </label>
+            <textarea rows="13" cols="100" th:field="*{texts}" style="border: 2px solid black;"/>
+        </div>
+        <br/><br/>
+        <div align="center">
+            <button type="button" onclick="history.back()">뒤로가기</button>
+            <button type="submit">글 작성</button>
+        </div>
+    </form>
+</div>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments.html :: myHeader"/>
+<body>
+<div th:if="${category==1}" th:insert="fragments.html :: myNav ('공지사항')"></div>
+<div th:if="${category==2}" th:insert="fragments.html :: myNav ('자유게시판')"></div>
+<div th:if="${category==3}" th:insert="fragments.html :: myNav ('골드게시판')"></div>
+<div th:if="${category==4}" th:insert="fragments.html :: myNav ('내가 좋아한 글')"></div>
+<div th:replace="fragments.html :: topDiv1"/>
+<div th:replace="fragments.html :: topDiv3"/>
+<div th:replace="fragments.html :: search"/>
+<button style="float: right; margin-right: 45px;"
+        th:if="${category!=4}"
+        th:onclick="|location.href='@{/content/{category}/write(category=${category})}'|">글 작성</button>
+<br/><br/>
+<div align="center">
+    <table style="width: 1200px;">
+        <thead>
+        <tr>
+            <th style="width: 150px;">카테고리</th>
+            <th style="width: 200px;">작성자</th>
+            <th style="width: 400px;">글제목</th>
+            <th style="width: 200px;">작성일</th>
+            <th style="width: 50px;">좋아요</th>
+            <th style="width: 100px;">글 보기</th>
+            <th style="width: 100px;">글 수정</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="content: ${contentList}">
+            <td th:if="${content.category==1}">공지사항</td>
+            <td th:if="${content.category==2}">자유게시판</td>
+            <td th:if="${content.category==3}">골드게시판</td>
+            <td th:text="${content.user.nickname}"/>
+            <td th:text="${content.title}"/>
+            <td th:text="${content.uploadDate}"/>
+            <td th:text="${content.userLikes.size()}">
+            <td>
+                <button class="myButton3" th:onclick="|location.href='@{/content/{id}/show(id=${content.id})}'|">
+                    보기</button>
+            </td>
+            <td>
+                <button class="myButton3" th:onclick="|location.href='@{/content/{id}/edit(id=${content.id})}'|">
+                    수정</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <br/>
+    <button style="width:50px;"  th:onclick="|location.href='@{/content/list/{category}(category=${category},page=1,opt=${opt},str=${str})}'|">&lt;&lt;</button>
+    <button th:if="${hasPreviousPage}" style="width:50px;"
+            th:onclick="|location.href='@{/content/list/{category}(category=${category},page=${page-1},opt=${opt},str=${str})}'|">&lt;</button>
+    <button th:unless="${hasPreviousPage}"style="width:50px; background-color: lightyellow">&lt;</button>
+
+    <span>[[${page}]] / [[${totalPages}]] page</span>
+
+    <button th:if="${hasNextPage}" style="width:50px;"
+            th:onclick="|location.href='@{/content/list/{category}(category=${category},page=${page+1},opt=${opt},str=${str})}'|">&gt;</button>
+    <button th:unless="${hasNextPage}" style="width:50px; background-color: lightyellow">&gt;</button>
+    <button style="width:50px;" th:onclick="|location.href='@{/content/list/{category}(category=${category},page=${totalPages},opt=${opt},str=${str})}'|">&gt;&gt;</button>
+</div>
+</body>
+</html>

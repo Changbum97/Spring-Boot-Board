@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:fragment="myHeader">
+    <meta charset="utf-8">
+    <link th:href="@{/mycss.css}" href="../static/mycss.css" rel="stylesheet">
+    <title>게시판</title>
+</head>
+
+<body>
+
+<nav th:fragment="myNav (pageName)" th:text="${pageName}"/>
+
+<div th:fragment="topDiv1" style="float: left;">
+    <br/>
+    <div style="margin-left: 50px;">
+        <button th:onclick="|location.href='@{/}'|">홈으로</button>
+    </div>
+</div>
+<div th:fragment="topDiv2">
+    <br/>
+    <div style="margin-left: 120px; margin-right: 120px; display: inline-block">
+        <button class="myButton2" th:onclick="|location.href='@{/content/list/1}'|">공지사항</button>
+        <button class="myButton2" th:onclick="|location.href='@{/content/list/2}'|">자유게시판</button>
+        <button class="myButton2" th:onclick="|location.href='@{/content/list3}'|">골드게시판</button>
+        <button class="myButton2" th:onclick="|location.href='@{/user/list}'|">유저리스트</button>
+        <button class="myButton2" th:onclick="|location.href='@{/content/list/4}'|">내가 좋아한 글</button>
+    </div>
+
+    <div style="display: inline-block">
+        <button th:onclick="|location.href='@{/user/login}'|">로그인</button>
+        <button th:onclick="|location.href='@{/user/signup}'|">회원가입</button>
+    </div>
+    <br/><br/>
+</div>
+<div th:fragment="topDiv3">
+    <br/>
+    <div style="margin-left: 120px; margin-right: 120px; display: inline-block">
+        <button class="myButton2" th:onclick="|location.href='@{/content/list/1}'|">공지사항</button>
+        <button class="myButton2" th:onclick="|location.href='@{/content/list/2}'|">자유게시판</button>
+        <button class="myButton2" th:onclick="|location.href='@{/content/list/3}'|">골드게시판</button>
+        <button class="myButton2" th:onclick="|location.href='@{/user/list}'|">유저리스트</button>
+        <button class="myButton2" th:onclick="|location.href='@{/content/list/4}'|">내가 좋아한 글</button>
+    </div>
+
+    <div style="display: inline-block">
+        <button th:onclick="|location.href='@{/user/logout}'|">로그아웃</button>
+        <button th:onclick="|location.href='@{/user/edit}'|">정보수정</button>
+    </div>
+    <br/><br/>
+</div>
+
+<div th:fragment="search" align="center" style="height: 50px;">
+    <form style="width: 700px; height: 50px; text-align: center; padding: 0px; padding-top: 10px; border: none;"
+            th:object="${searchForm}" th:method="post" action="/content/search">
+        <select style="height: 30px; width: 100px;" th:field="*{opt}">
+            <option th:value="1">제목(포함)</option>
+            <option th:value="2">작성자</option>
+            <option th:value="3">좋아요순</option>
+            <option th:value="4">최신순</option>
+        </select>
+        <input th:field="*{str}" type="text" style="width: 300px; height: 25px;" />
+        <button type="submit" class="myButton3">검색</button>
+    </form>
+</div>
+</body>
+</html>

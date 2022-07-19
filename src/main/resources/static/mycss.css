@@ -1,0 +1,58 @@
+@charset "UTF-8";
+.field-error {
+    border-color: red;
+}
+div.field-error {
+    color: red;
+}
+form {
+    border-color: black;
+    border-style: solid;
+    width: 500px;
+    padding: 30px;
+    padding-top: 30px;
+    text-align: left;
+}
+button {
+    width: 100px;
+    height: 40px;
+    border-radius: 15px;
+    border-width: 3px;
+    background-color: yellow;
+    font-weight: bolder;
+    font-size: large;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+.myButton2{
+    background-color: orange;
+    width: 140px;
+}
+.myButton3 {
+    height: 30px;
+    font-size: medium;
+    background-color: lightgray;
+    margin: 0px;
+    border-width: 1px;
+    border-radius: 0px;
+}
+nav {
+    text-align: center;
+    font-size: xx-large;
+    font-weight: bolder;
+    background-color: skyblue;
+    padding-top: 10px;
+    height: 60px;"
+}
+table {
+    border-style: solid;
+    border-color: black;
+    text-align: center;
+    border-collapse: collapse;
+}
+th {
+    border-bottom: solid red 3px;
+}
+td {
+    border : solid black 1px;
+}

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments.html :: myHeader"/>
+<body>
+<nav th:replace="fragments.html :: myNav ('글보기')"/>
+<div th:replace="fragments.html :: topDiv1"/>
+<br/><br/><br/><br/>
+<div align="center">
+    <form action="show.html" th:action th:method="post" th:object="${content}" style="width: 750px;">
+        <div>
+            <label th:if="*{category==1}">카테고리 : 공지사항</label>
+            <label th:if="*{category==2}">카테고리 : 자유게시판</label>
+            <label th:if="*{category==3}">카테고리 : 골드게시판</label>
+        </div>
+        <br/>
+        <div>
+            <label>작성일 : [[*{uploadDate}]]</label>
+        </div>
+        <br/>
+        <div>
+            <label>작성자 : [[*{writer}]]</label>
+        </div>
+        <br/>
+        <div>
+            <label>글제목 : [[*{title}]]</label>
+        </div>
+        <br/>
+        <div>
+            <img th:each="imageFile : *{imageFiles}" th:src="|/content/images/${imageFile.getStoreFilename()}|"
+                 width="100px" height="100px" style="border-color: black; border-style: solid; border-width: thin;"/>
+        </div>
+        <br/>
+        <div>
+            <label th:for="texts">내용 : </label>
+            <textarea rows="13" cols="100" th:field="*{texts}" style="border: 2px solid black;" readonly/>
+        </div>
+        <br/><br/>
+        <div>
+            <button type="button" onclick="history.back()">뒤로가기</button>
+            <button th:if="${likeCheck==false}" type="submit" style="width: 130px;">좋아요</button>
+            <button th:unless="${likeCheck==false}" type="submit" style="width: 130px;">좋아요 취소</button>
+            <label>좋아요 : [[*{likes}]]</label>
+        </div>
+    </form>
+</div>
+</body>
+</html>

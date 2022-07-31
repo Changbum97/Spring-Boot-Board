@@ -22,9 +22,14 @@
         <div th:if="${#fields.hasGlobalErrors()}" class="field-error" th:each="err : ${#fields.globalErrors()}" th:text="${err}"/>
         <br/>
         <div align="center">
-            <button type="submit">로그인</button>
+            <button type="submit" style="background-color: lightgray;">로그인</button>
         </div>
     </form>
+    <br/>
+    <button onclick="location.href='/oauth2/authorization/google'" class="myButton4" style="background-color: whitesmoke;">구글 로그인</button> <br/>
+    <button onclick="location.href='/oauth2/authorization/facebook'" class="myButton4" style="background-color: deepskyblue;">페이스북 로그인</button> <br/>
+    <button onclick="location.href='/oauth2/authorization/naver'" class="myButton4" style="background-color: lime;">네이버 로그인</button> <br/>
+    <button onclick="location.href='/oauth2/authorization/kakao'" class="myButton4">카카오 로그인</button>
 </div>
 </body>
 </html>

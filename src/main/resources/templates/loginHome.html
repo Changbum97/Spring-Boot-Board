@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments.html :: myHeader"/>
 <body>
-<nav th:replace="fragments.html :: myNav (${loginUser.nickname} + '님 반갑습니다! ( 등급 : ' + ${loginUser.grade} + ' )')"/>
+<nav th:replace="fragments.html :: myNav (${loginUser.nickname} + '님 반갑습니다! ( 등급 : ' + ${loginUser.role} + ' )')"/>
 <div th:replace="fragments.html :: topDiv1"/>
 <div th:replace="fragments.html :: topDiv3"/>
 </body>

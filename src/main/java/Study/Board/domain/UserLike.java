@@ -31,7 +31,7 @@ public class UserLike {
         content.getUser().setLikeCount( content.getUser().getLikeCount() + 1 );
         content.setLikeCount( content.getLikeCount() + 1);
         if(content.getUser().getLikeCount() >= 10) {
-            content.getUser().setGrade(Grade.GOLD);
+            content.getUser().setRole("GOLD");
         }
     }
 }

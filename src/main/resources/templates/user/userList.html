@@ -21,7 +21,7 @@
         <tr th:each="user: ${users}" style="height: 30px;">
             <td th:text="${user.id}"/>
             <td th:text="${user.nickname}"/>
-            <td th:text="${user.grade}"/>
+            <td th:text="${user.role}"/>
             <td th:text="${user.contents.size()}"></td>
             <td th:text="${user.likeCount}"/>
         </tr>

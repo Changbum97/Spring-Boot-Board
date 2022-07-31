@@ -12,24 +12,26 @@
             <input type="text" th:field="*{loginId}" readonly/>
         </div>
         <br/>
-        <div>
-            <label th:for="oldPassword">현재 비밀번호 : </label>
-            <input type="password" th:field="*{oldPassword}" th:errorclass="field-error"/>
-            <div class="field-error" th:errors="*{oldPassword}" />
+        <div th:if="${oauth==false}">
+            <div>
+                <label th:for="oldPassword">현재 비밀번호 : </label>
+                <input type="password" th:field="*{oldPassword}" th:errorclass="field-error"/>
+                <div class="field-error" th:errors="*{oldPassword}" />
+            </div>
+            <br/>
+            <div>
+                <label th:for="password">새 비밀번호 : </label>
+                <input type="password" th:field="*{password}" th:errorclass="field-error"/>
+                <div class="field-error" th:errors="*{password}" />
+            </div>
+            <br/>
+            <div>
+                <label th:for="passwordCheck">새 비밀번호 확인 : </label>
+                <input type="password" th:field="*{passwordCheck}" th:errorclass="field-error"/>
+                <div class="field-error" th:errors="*{passwordCheck}" />
+            </div>
+            <br/>
         </div>
-        <br/>
-        <div>
-            <label th:for="password">새 비밀번호 : </label>
-            <input type="password" th:field="*{password}" th:errorclass="field-error"/>
-            <div class="field-error" th:errors="*{password}" />
-        </div>
-        <br/>
-        <div>
-            <label th:for="passwordCheck">새 비밀번호 확인 : </label>
-            <input type="password" th:field="*{passwordCheck}" th:errorclass="field-error"/>
-            <div class="field-error" th:errors="*{passwordCheck}" />
-        </div>
-        <br/>
         <div>
             <label th:for="oldNickname">현재 닉네임 : </label>
             <input type="text" th:field="*{oldNickname}" readonly/>

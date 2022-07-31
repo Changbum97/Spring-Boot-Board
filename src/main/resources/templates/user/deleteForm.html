@@ -7,12 +7,14 @@
 <br/><br/><br/><br/>
 <div align="center">
     <form action="deleteForm.html" th:action th:method="post" th:object="${userLoginForm}">
-        <div>
-            <label th:for="password">비밀번호 체크 : </label>
-            <input type="password" th:field="*{password}" th:errorclass="field-error"/>
-            <div class="field-error" th:errors="*{password}" />
+        <div th:if="${oauth==false}">
+            <div>
+                <label th:for="password">비밀번호 체크 : </label>
+                <input type="password" th:field="*{password}" th:errorclass="field-error"/>
+                <div class="field-error" th:errors="*{password}" />
+            </div>
+            <br/>
         </div>
-        <br/>
         <div align="center">
             <button type="submit">회원탈퇴</button>
         </div>

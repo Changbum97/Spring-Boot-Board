@@ -1,6 +1,7 @@
 package Study.Board.domain;
 
 import lombok.Data;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -20,9 +21,13 @@ public class User {
     private String nickname;
     private String signupDate;
 
-    private Grade grade;
+    private String role;
+    // BRONZE SILVER GOLD ADMIN
 
     private Integer likeCount;
+
+    private String provider;
+    private String providerId;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Content> contents = new ArrayList<>();

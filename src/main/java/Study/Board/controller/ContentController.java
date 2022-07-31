@@ -1,5 +1,6 @@
 package Study.Board.controller;
 
+import Study.Board.auth.PrincipalDetails;
 import Study.Board.domain.*;
 import Study.Board.repository.ContentRepository;
 import Study.Board.repository.UploadFileRepository;
@@ -11,6 +12,7 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -50,9 +52,10 @@ public class ContentController {
 
     @GetMapping("/list/{category}")
     public String showContentList(Model model, @RequestParam(required = false, defaultValue = "1") int page,
-                                  @PathVariable int category, @SessionAttribute(name = "loginUser") User loginUser,
+                                  @PathVariable int category, @AuthenticationPrincipal PrincipalDetails principalDetails,
                                   @RequestParam(required = false, defaultValue = "0") int opt,
                                   @RequestParam(required = false, defaultValue = "") String str){
+        User loginUser = principalDetails.getUser();
         PageRequest pageRequest = PageRequest.of(page - 1,10);
 
         log.info("============");
@@ -105,7 +108,8 @@ public class ContentController {
     }
 
     @GetMapping("/{category}/write")
-    public String writeForm(Model model, @PathVariable int category, @SessionAttribute(name = "loginUser") User loginUser){
+    public String writeForm(Model model, @PathVariable int category, @AuthenticationPrincipal PrincipalDetails principalDetails){
+        User loginUser = principalDetails.getUser();
         ContentWriteForm form = new ContentWriteForm();
         form.setCategory(category);
         form.setWriter(loginUser.getNickname());
@@ -115,7 +119,8 @@ public class ContentController {
 
     @PostMapping("/{category}/write")
     public String write(@Valid @ModelAttribute ContentWriteForm form, BindingResult bindingResult,
-                        @SessionAttribute(name = "loginUser") User loginUser, Model model) throws IOException {
+                        @AuthenticationPrincipal PrincipalDetails principalDetails, Model model) throws IOException {
+        User loginUser = principalDetails.getUser();
         if(form.getImageFiles().stream()
                 .filter(f -> !f.getContentType().startsWith("image"))
                 .findAny()
@@ -144,9 +149,9 @@ public class ContentController {
         content.setImageFiles(imageFiles);
         contentRepository.save(content1);
 
-        if(loginUser.getGrade() == Grade.BRONZE) {
+        if(loginUser.getRole().equals("BRONZE")) {
             User user = userService.findById(loginUser.getId());
-            user.setGrade(Grade.SILVER);
+            user.setRole("SILVER");
             userService.edit(user);
         }
 
@@ -158,13 +163,15 @@ public class ContentController {
 
     @GetMapping("/{content_id}/show")
     public String showContent(Model model, @PathVariable Long content_id,
-                              @SessionAttribute(name = "loginUser") User loginUser){
+                              @AuthenticationPrincipal PrincipalDetails principalDetails){
+        User loginUser = principalDetails.getUser();
         if(contentRepository.findById(content_id).isEmpty()) {
             model.addAttribute("msg", "존재하지 않는 게시물입니다!");
             model.addAttribute("url", "/");
             return "message";
         }
-        if(contentRepository.findById(content_id).get().getCategory() == 3 && loginUser.getGrade().compareTo(Grade.GOLD) < 0) {
+        if(contentRepository.findById(content_id).get().getCategory() == 3 &&
+                (loginUser.getRole().equals("BRONZE") || loginUser.getRole().equals("SILVER"))) {
             model.addAttribute("msg", "골드 이상만 가능합니다!");
             model.addAttribute("url", "/");
             return "message";
@@ -191,13 +198,15 @@ public class ContentController {
 
     @PostMapping("/{content_id}/show")
     public String likeContent(Model model, @PathVariable Long content_id,
-                              @SessionAttribute(name = "loginUser") User loginUser) {
+                              @AuthenticationPrincipal PrincipalDetails principalDetails) {
+        User loginUser = principalDetails.getUser();
         if(contentRepository.findById(content_id).isEmpty()) {
             model.addAttribute("msg", "존재하지 않는 게시물입니다!");
             model.addAttribute("url", "/");
             return "message";
         }
-        if(contentRepository.findById(content_id).get().getCategory() == 3 && loginUser.getGrade().compareTo(Grade.GOLD) < 0) {
+        if(contentRepository.findById(content_id).get().getCategory() == 3 &&
+                (loginUser.getRole().equals("BRONZE") || loginUser.getRole().equals("SILVER"))) {
             model.addAttribute("msg", "골드 이상만 가능합니다!");
             model.addAttribute("url", "/");
             return "message";
@@ -235,7 +244,9 @@ public class ContentController {
     }
 
     @GetMapping("/{content_id}/edit")
-    public String editForm(Model model, @PathVariable Long content_id, @SessionAttribute(name = "loginUser") User loginUser){
+    public String editForm(Model model, @PathVariable Long content_id, @AuthenticationPrincipal PrincipalDetails principalDetails){
+        User loginUser = principalDetails.getUser();
+
         if(contentRepository.findById(content_id).isEmpty()) {
             model.addAttribute("msg", "존재하지 않는 게시물입니다!");
             model.addAttribute("url", "/");

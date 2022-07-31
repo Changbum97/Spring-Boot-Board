@@ -1,5 +1,6 @@
 package Study.Board.controller;
 
+import Study.Board.auth.PrincipalDetails;
 import Study.Board.domain.*;
 import Study.Board.repository.UserLikeRepository;
 import Study.Board.service.UserService;
@@ -7,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -31,7 +34,7 @@ public class UserController {
 
     public static Hashtable sessionList = new Hashtable();
     private final UserService userService;
-    private final UserLikeRepository userLikeRepository;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @GetMapping("/signup")
     public String signupForm(@ModelAttribute UserSignupForm form) {
@@ -39,8 +42,7 @@ public class UserController {
     }
 
     @PostMapping("/signup")
-    public String signup(@Valid @ModelAttribute UserSignupForm form, BindingResult bindingResult,
-                         HttpServletRequest request, Model model) {
+    public String signup(@Valid @ModelAttribute UserSignupForm form, BindingResult bindingResult, Model model) {
         if (userService.findByLoginId(form.getLoginId()).isPresent()) {
             bindingResult.rejectValue("loginId", "signupFail", "아이디가 중복됩니다!");
         }
@@ -58,19 +60,14 @@ public class UserController {
         User user = new User();
         user.setLoginId(form.getLoginId());
         user.setNickname(form.getNickname());
-        user.setPassword(form.getPassword());
-        user.setGrade(Grade.BRONZE);
+        user.setPassword( bCryptPasswordEncoder.encode(form.getPassword()) );
+        user.setRole("BRONZE");
         user.setSignupDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         user.setLikeCount(0);
         userService.signup(user);
         log.info("회원가입 성공 : {}", user.getNickname());
 
-        HttpSession session = request.getSession(true);
-        session.setAttribute("loginUser", user);
-        sessionList.put(session.getId(), session);
-
-        log.info("로그인 성공 : {}", user.getNickname());
-        model.addAttribute("msg", "회원가입 + 로그인 성공!");
+        model.addAttribute("msg", "회원가입에 성공했습니다! 로그인해주세요!");
         model.addAttribute("url", "/");
         return "message";
     }
@@ -78,30 +75,6 @@ public class UserController {
     @GetMapping("/login")
     public String loginForm(@ModelAttribute UserLoginForm form) {
         return "user/loginForm";
-    }
-
-    @PostMapping("/login")
-    public String login(@Valid @ModelAttribute UserLoginForm form, BindingResult bindingResult,
-                        HttpServletRequest request, Model model) {
-        Optional<User> optionalUser = userService.findByLoginId(form.getLoginId());
-        if (optionalUser.isEmpty()) {
-            bindingResult.rejectValue("loginId", "loginFail", "유저가 존재하지 않습니다!");
-            return "user/loginForm";
-        }
-        User user = optionalUser.get();
-        if (!user.getPassword().equals(form.getPassword())) {
-            bindingResult.rejectValue("password", "loginFail", "비밀번호가 일치하지 않습니다!");
-            return "user/loginForm";
-        }
-
-        HttpSession session = request.getSession(true);
-        session.setAttribute("loginUser", user);
-        sessionList.put(session.getId(), session);
-
-        log.info("로그인 성공 : {}", user.getNickname());
-        model.addAttribute("msg", "로그인 성공!");
-        model.addAttribute("url", "/");
-        return "message";
     }
 
     @GetMapping("/logout")
@@ -118,50 +91,70 @@ public class UserController {
     }
 
     @GetMapping("/edit")
-    public String editForm(@SessionAttribute(name = "loginUser") User loginUser, Model model) {
+    public String editForm(@AuthenticationPrincipal PrincipalDetails principalDetails, Model model) {
+        User loginUser = principalDetails.getUser();
         UserEditForm form = new UserEditForm();
         form.setLoginId(loginUser.getLoginId());
         form.setOldNickname(loginUser.getNickname());
         model.addAttribute("userEditForm", form);
+        if(loginUser.getProvider() == null) {
+            model.addAttribute("oauth", false);
+        } else {
+            model.addAttribute("oauth", true);
+        }
         return "user/editForm";
     }
 
     @PostMapping("/edit")
-    public String edit(@SessionAttribute(name = "loginUser") User loginUser,
+    public String edit(@AuthenticationPrincipal PrincipalDetails principalDetails,
                        @Valid @ModelAttribute UserEditForm form, BindingResult bindingResult,
                        HttpServletRequest request, Model model) {
-        if (!loginUser.getPassword().equals(form.getOldPassword())) {
-            bindingResult.rejectValue("oldPassword", "editFail", "현재 비밀번호를 틀렸습니다!");
-        }
-        if (!form.getPassword().equals(form.getPasswordCheck())) {
-            bindingResult.rejectValue("passwordCheck", "editFail", "비밀번호가 일치하지 않습니다!");
-        }
-        if (userService.findByNickname(form.getNickname()).isPresent() && !loginUser.getNickname().equals(form.getNickname())) {
-            bindingResult.rejectValue("nickname", "editFail", "닉네임이 중복됩니다!");
-        }
-        if (bindingResult.hasErrors()) {
-            log.info("정보수정 실패");
-            return "user/editForm";
+        User loginUser = principalDetails.getUser();
+        if(loginUser.getProvider() == null) {
+            if (!bCryptPasswordEncoder.matches(form.getOldPassword(), loginUser.getPassword())) {
+                bindingResult.rejectValue("oldPassword", "editFail", "현재 비밀번호를 틀렸습니다!");
+            }
+            if (!form.getPassword().equals(form.getPasswordCheck())) {
+                bindingResult.rejectValue("passwordCheck", "editFail", "비밀번호가 일치하지 않습니다!");
+            }
+            if (userService.findByNickname(form.getNickname()).isPresent() && !loginUser.getNickname().equals(form.getNickname())) {
+                bindingResult.rejectValue("nickname", "editFail", "닉네임이 중복됩니다!");
+            }
+
+            if (bindingResult.hasErrors()) {
+                log.info("정보수정 실패");
+                model.addAttribute("oauth", false);
+                return "user/editForm";
+            }
+        } else {
+            if (userService.findByNickname(form.getNickname()).isPresent() && !loginUser.getNickname().equals(form.getNickname())) {
+                bindingResult.rejectValue("nickname", "editFail", "닉네임이 중복됩니다!");
+            }
+            if (bindingResult.hasFieldErrors("nickname")) {
+                log.info("정보수정 실패");
+                model.addAttribute("oauth", true);
+                return "user/editForm";
+            }
         }
 
         User user = userService.findById(loginUser.getId());
 
-        HttpSession oldSession = request.getSession(false);
-        sessionList.remove(oldSession.getId());
-        oldSession.invalidate();
-
-        user.setGrade(loginUser.getGrade());
         user.setNickname(form.getNickname());
-        user.setPassword(form.getPassword());
+        if(loginUser.getProvider() == null) {
+            user.setPassword(bCryptPasswordEncoder.encode(form.getPassword()));
+        }
         userService.edit(user);
 
-        HttpSession session = request.getSession(true);
-        session.setAttribute("loginUser", user);
-        sessionList.put(session.getId(), session);
-
         log.info("정보수정 성공 : {}", user.getNickname());
-        model.addAttribute("msg", "정보수정 성공!");
-        model.addAttribute("url", "/");
+
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            sessionList.remove(session.getId());
+            session.invalidate();
+        }
+
+        model.addAttribute("msg", "정보수정 성공! 다시 로그인 해주세요!");
+        model.addAttribute("url", "/user/login");
         return "message";
     }
 
@@ -186,39 +179,49 @@ public class UserController {
     }
 
     @GetMapping("/delete")
-    public String deleteForm(@ModelAttribute UserLoginForm form) {
+    public String deleteForm(@ModelAttribute UserLoginForm form, Model model,
+                             @AuthenticationPrincipal PrincipalDetails principalDetails) {
+        User loginUser = principalDetails.getUser();
+        if(loginUser.getProvider() == null) {
+            model.addAttribute("oauth", false);
+        } else {
+            model.addAttribute("oauth", true);
+        }
         return "user/deleteForm";
     }
 
     @PostMapping("/delete")
     public String delete(@ModelAttribute UserLoginForm form, Model model, HttpServletRequest request,
-                         @SessionAttribute(name = "loginUser") User loginUser) {
-        if (!form.getPassword().equals(loginUser.getPassword())) {
-            model.addAttribute("msg", "비밀번호가 틀렸습니다!");
-            model.addAttribute("url", "/user/delete");
-            log.info("회원탈퇴 실패");
-            return "message";
-        } else {
-            userService.delete(loginUser.getId());
-            log.info("회원탈퇴 성공");
-            HttpSession session = request.getSession(false);
-            if (session != null) {
-                sessionList.remove(session.getId());
-                session.invalidate();
+                         @AuthenticationPrincipal PrincipalDetails principalDetails) {
+        User loginUser = principalDetails.getUser();
+        if(loginUser.getProvider() == null) {
+            if (!bCryptPasswordEncoder.matches(form.getPassword(), loginUser.getPassword())) {
+                model.addAttribute("msg", "비밀번호가 틀렸습니다!");
+                model.addAttribute("url", "/user/delete");
+                log.info("회원탈퇴 실패");
+                return "message";
             }
-            model.addAttribute("msg", "회원탈퇴 되었습니다!");
-            model.addAttribute("url", "/");
-            return "message";
         }
+
+        userService.delete(loginUser.getId());
+        log.info("회원탈퇴 성공");
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            sessionList.remove(session.getId());
+            session.invalidate();
+        }
+        model.addAttribute("msg", "회원탈퇴 되었습니다!");
+        model.addAttribute("url", "/");
+        return "message";
     }
-}
- /*   @PostConstruct
+
+    @PostConstruct
     public void init() {
         User admin = new User();
         admin.setLoginId("admin");
         admin.setNickname("관리자");
-        admin.setGrade(Grade.ADMIN);
-        admin.setPassword("1234");
+        admin.setRole("ADMIN");
+        admin.setPassword( bCryptPasswordEncoder.encode("1234") );
         admin.setSignupDate((LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
         admin.setLikeCount(0);
         userService.signup(admin);
@@ -226,22 +229,10 @@ public class UserController {
         User user1 = new User();
         user1.setLoginId("chb2005");
         user1.setNickname("창범");
-        user1.setGrade(Grade.GOLD);
-        user1.setPassword("1234");
+        user1.setRole("GOLD");
+        user1.setPassword( bCryptPasswordEncoder.encode("1234") );
         user1.setSignupDate((LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
         user1.setLikeCount(0);
         userService.signup(user1);
-
-        User[] users = new User[30];
-        for(int i = 1 ; i <= 25 ; i ++) {
-            users[i] = new User();
-            users[i].setLoginId("user" + i);
-            users[i].setNickname("유저" + i);
-            users[i].setPassword("1234");
-            users[i].setGrade(Grade.BRONZE);
-            users[i].setSignupDate((LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
-            users[i].setLikeCount(0);
-            userService.signup(users[i]);
-        }
     }
-}*/
+}

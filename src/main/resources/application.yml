@@ -1,0 +1,66 @@
+# URL에 세션 남기는거 방지 server.servlet.session.tracking-modes=cookie
+# 1800초(30분) 후에 세션 종료  server.servlet.session.timeout=1800
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/board
+    username: root
+    password: root
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 606320271291-i5d5lsgs8mj5tjis3b5vt8fvko2771tm.apps.googleusercontent.com
+            client-secret: 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
+            scope:
+              - email
+              - profile
+
+          facebook:
+            client-id: 1101486710474713
+            client-secret: ac56174aa2c041c01be1602598fa7510
+            scope:
+              - email
+              - public_profile
+
+          naver:
+            client-id: XBmcMCo2gvpWWGpEsmgY
+            client-secret: VGmPUkRsQ3
+            scope:
+              - name
+              - email
+            client-name: Naver
+            authorization-grant-type: authorization_code
+            redirect-uri: http://localhost:8080/login/oauth2/code/naver
+
+          kakao:
+            client-id: 0d84cb45b6d2625b769d9441b8a35b1f
+            client-secret: ZSrz0k5LBVoMPj9qj9QzcYh3AN9ftqSy
+            scope:
+              - account_email
+              - profile_nickname
+            authorization-grant-type: authorization_code
+            redirect-uri: http://localhost:8080/login/oauth2/code/kakao
+            client-name: Kakao
+            client-authentication-method: POST
+
+        provider:
+          naver:
+            authorization-uri: https://nid.naver.com/oauth2.0/authorize
+            token-uri: https://nid.naver.com/oauth2.0/token
+            user-info-uri: https://openapi.naver.com/v1/nid/me
+            user-name-attribute: response
+
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
